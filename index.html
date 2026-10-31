@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10101a">
+  <meta name="description" content="A calm, beautifully focused space to plan your day and make meaningful progress.">
+  <title>Daylight — Make today count</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10101a;
+      --surface: #181824;
+      --surface-raised: #1d1d2b;
+      --line: rgba(255,255,255,.075);
+      --text: #f5f4fb;
+      --muted: #9291a6;
+      --purple: #a78bfa;
+      --blue: #70a5ff;
+      --green: #67dfbb;
+      --radius: 18px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 74% -16%, rgba(119,87,224,.18), transparent 36%),
+        radial-gradient(ellipse at -12% 66%, rgba(53,115,209,.10), transparent 35%),
+        var(--bg);
+    }
+
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--purple);
+      outline-offset: 3px;
+    }
+    .app-shell { display: grid; grid-template-columns: 248px minmax(0,1fr); min-height: 100vh; }
+    .sidebar {
+      position: sticky; top: 0; height: 100vh; padding: 28px 18px;
+      border-right: 1px solid var(--line); background: rgba(18,18,28,.76);
+      backdrop-filter: blur(20px); display: flex; flex-direction: column; z-index: 3;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px; font-size: 19px; font-weight: 720; letter-spacing: -.5px; }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(140deg,#a384ff,#6d91ff); box-shadow: 0 5px 22px #8a75ef55;
+    }
+    .brand-mark svg { width: 19px; height: 19px; }
+    .side-label { margin: 40px 10px 12px; color: #77768a; text-transform: uppercase; letter-spacing: 1.15px; font-size: 10px; font-weight: 750; }
+    .nav-item {
+      display: flex; gap: 12px; align-items: center; padding: 11px 12px; border-radius: 11px;
+      color: #aeadbd; font-size: 13px; font-weight: 550; text-decoration: none;
+    }
+    .nav-item.active { color: #ded8ff; background: linear-gradient(100deg,rgba(150,124,255,.16),rgba(111,133,255,.07)); }
+    .nav-item svg { width: 17px; height: 17px; opacity: .85; }
+    .side-bottom { margin-top: auto; }
+    .focus-card {
+      padding: 16px; border: 1px solid rgba(167,139,250,.16); border-radius: 15px;
+      background: linear-gradient(145deg,rgba(133,105,227,.13),rgba(47,64,111,.10));
+    }
+    .focus-orb { width: 30px;height:30px; border-radius:50%; display:grid;place-items:center; background:#a78bfa20; color:var(--purple); margin-bottom:13px; }
+    .focus-card strong { display:block; font-size:12px; margin-bottom:6px; }
+    .focus-card p { color:var(--muted); font-size:11px; line-height:1.55; margin:0; }
+    .profile { display:flex; align-items:center; gap:10px; padding:20px 8px 0; }
+    .avatar { display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:linear-gradient(140deg,#514775,#385477);font-size:12px;font-weight:700; }
+    .profile strong { font-size:12px; display:block; }
+    .profile small { color:var(--muted); font-size:10px; }
+    .account-button { display:flex;align-items:center;gap:8px;padding:5px 9px;border:1px solid var(--line);border-radius:12px;background:#ffffff05;color:#d5d2e0;font-size:11px;cursor:pointer; }
+    .account-button:hover { border-color:#a78bfa55;background:#a78bfa12; }
+    .account-button .avatar { width:25px;height:25px;border-radius:9px;overflow:hidden; }
+    .avatar img { width:100%;height:100%;object-fit:cover; }
+    .account-dialog { max-height:min(90vh,760px);overflow:auto; }
+    .account-dialog .dialog-content { display:grid;gap:12px; }
+    .account-dialog .dialog-content p { margin:0; }
+    .account-dialog label { display:grid;gap:6px;color:#aaa9ba;font-size:11px; }
+    .account-dialog input:not([type="file"]) { width:100%;height:40px;border:1px solid var(--line);border-radius:10px;background:#10101a;color:var(--text);padding:0 11px;font-size:12px; }
+    .account-dialog input[type="file"] { color:#aaa9ba;font-size:10px; }
+    .account-dialog .dialog-actions { margin-top:4px; }
+    .account-status { min-height:16px;color:#f1c784;font-size:11px;line-height:1.5; }
+    .avatar-preview { display:grid;place-items:center;width:64px;height:64px;border-radius:20px;overflow:hidden;background:linear-gradient(140deg,#514775,#385477);font-size:22px;font-weight:700; }
+    .clerk-auth-mount { min-height:180px; }
+    .account-identity { display:flex;align-items:center;gap:11px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#ffffff04; }
+    .account-identity img { width:38px;height:38px;border-radius:12px;object-fit:cover; }
+    .account-identity strong,.account-identity small { display:block; }
+    .account-identity strong { font-size:12px; }
+    .account-identity small { margin-top:3px;color:var(--muted);font-size:10px;overflow-wrap:anywhere; }
+
+    main { width: min(1120px,100%); margin: 0 auto; padding: 36px 48px 70px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:34px; }
+    .breadcrumb { color:#8a899c;font-size:12px; }
+    .top-actions { display:flex; align-items:center; gap:10px; }
+    .clock-pill { color:#c9c7d7; font-size:12px; padding:9px 13px; border:1px solid var(--line); border-radius:30px; background:#ffffff04; font-variant-numeric:tabular-nums; }
+    .icon-button {
+      border:1px solid var(--line); background:#ffffff05; width:36px;height:36px;border-radius:12px;
+      display:grid;place-items:center;cursor:pointer;transition:.2s;
+    }
+    .icon-button:hover { border-color:#a78bfa55; background:#a78bfa12; }
+    .icon-button svg { width:17px;height:17px;color:#c1bfd0; }
+    .welcome { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:25px; }
+    .eyebrow { color:#b6a7fa; font-size:11px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; margin:0 0 10px; }
+    h1 { font-size: clamp(29px,4vw,39px); letter-spacing:-1.6px; line-height:1.1; margin:0; font-weight:690; }
+    .welcome p.subline { color:var(--muted);font-size:13px;margin:10px 0 0; }
+    .date-label { color:#b0aec1; font-size:12px; padding-bottom:3px; white-space:nowrap; }
+
+    .overview {
+      display:grid;grid-template-columns:1.12fr repeat(3,1fr); gap:13px; margin-bottom:28px;
+    }
+    .stat-card {
+      min-height:126px; padding:18px 19px; border:1px solid var(--line); border-radius:var(--radius);
+      background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+      box-shadow:0 14px 40px rgba(0,0,0,.10); position:relative; overflow:hidden;
+    }
+    .stat-card.progress-card { background:linear-gradient(135deg,rgba(133,105,227,.20),rgba(64,83,151,.10)); border-color:rgba(167,139,250,.18); }
+    .stat-heading { color:#aaa9ba;font-size:11px;display:flex;align-items:center;gap:7px; }
+    .stat-icon { width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:#ffffff0b;color:#b5a2ff; }
+    .stat-icon svg { width:14px;height:14px; }
+    .stat-number { font-size:27px;font-weight:680;letter-spacing:-.8px;margin:13px 0 3px;font-variant-numeric:tabular-nums; }
+    .stat-foot { color:#878698;font-size:10px; }
+    .progress-card .stat-number { display:inline-block; }
+    .progress-track { height:5px;border-radius:9px;background:#ffffff12;margin-top:12px;overflow:hidden; }
+    .progress-fill { width:0;height:100%;border-radius:9px;background:linear-gradient(90deg,#bd8dff,#7a9dff);transition:width .6s cubic-bezier(.2,.8,.2,1); }
+
+    .workspace { display:grid;grid-template-columns:minmax(0,1.52fr) minmax(260px,.78fr);gap:17px;align-items:start; }
+    .panel { border:1px solid var(--line);border-radius:var(--radius);background:rgba(25,25,37,.76);box-shadow:0 12px 40px rgba(0,0,0,.10); }
+    .task-panel { padding:21px; }
+    .panel-heading { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px; }
+    .panel-heading h2 { font-size:15px;letter-spacing:-.2px;margin:0;font-weight:650; }
+    .count-badge { color:#b8a8ff;background:#a78bfa17;padding:5px 9px;border-radius:20px;font-size:10px;font-weight:700; }
+    .add-form { display:flex;gap:8px;margin-bottom:19px; }
+    .task-input-wrap { position:relative;flex:1;min-width:0; }
+    .task-input-wrap svg { position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#77768a;pointer-events:none; }
+    .task-input {
+      width:100%;height:43px;border:1px solid rgba(255,255,255,.09);border-radius:12px;
+      color:var(--text);background:#10101a99;padding:0 12px 0 37px;font-size:12px;transition:.2s;
+    }
+    .task-input::placeholder { color:#77768a; }
+    .task-input:focus { border-color:#a78bfa77;box-shadow:0 0 0 3px #a78bfa14;outline:none; }
+    .primary-button {
+      height:43px;border:0;border-radius:12px;padding:0 15px;cursor:pointer;white-space:nowrap;
+      font-size:12px;font-weight:650;color:white;background:linear-gradient(115deg,#9b75ef,#718ef3);
+      box-shadow:0 5px 18px #7f74e833;transition:transform .18s,filter .18s;
+    }
+    .primary-button:hover { transform:translateY(-1px);filter:brightness(1.09); }
+    .priority-picker { display:flex;align-items:center;gap:2px; padding:0 5px; border:1px solid var(--line);border-radius:12px;background:#10101a99; }
+    .star-choice { border:0;background:transparent;color:#5e5d70;cursor:pointer;padding:7px 2px;font-size:15px;transition:color .15s,transform .15s; }
+    .star-choice:hover,.star-choice.selected { color:#f5bd6b; }
+    .star-choice:hover { transform:scale(1.14); }
+    .task-list { display:grid;gap:9px; }
+    .task-card {
+      display:flex;align-items:center;gap:12px;min-height:77px;padding:13px 12px;
+      border:1px solid rgba(255,255,255,.065);border-radius:14px;background:rgba(255,255,255,.022);
+      transition:transform .2s,border-color .2s,background .2s;animation:arrive .32s ease both;
+    }
+    .task-card:hover { transform:translateY(-2px);border-color:#a78bfa33;background:rgba(255,255,255,.04); }
+    @keyframes arrive { from {opacity:0;transform:translateY(7px)} to {opacity:1;transform:translateY(0)} }
+    .task-check {
+      min-height:29px;flex:0 0 auto;padding:0 8px;border:1px solid #656478;border-radius:8px;background:transparent;
+      display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;color:#b9b7c8;
+      font-size:9px;font-weight:650;white-space:nowrap;transition:.2s;
+    }
+    .task-check:hover { border-color:var(--green);box-shadow:0 0 12px #67dfbb33; }
+    .task-check svg { width:12px;height:12px; }
+    .task-body { flex:1;min-width:0; }
+    .task-title { overflow-wrap:anywhere;font-size:12px;font-weight:570;line-height:1.4; }
+    .task-meta { display:flex;align-items:center;gap:9px;margin-top:6px;color:#89889a;font-size:10px; }
+    .task-stars { color:#f3bd6c;letter-spacing:1px;font-size:10px; }
+    .reminder-count { display:flex;align-items:center;gap:4px; }
+    .reminder-count svg { width:11px;height:11px; }
+    .task-actions { display:flex;gap:5px; }
+    .mini-button { border:0;background:transparent;color:#8f8da0;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;cursor:pointer;transition:.18s; }
+    .mini-button:hover { color:#ded7ff;background:#a78bfa17; }
+    .mini-button.delete:hover { color:#ff858e;background:#ff738312; }
+    .mini-button svg { width:14px;height:14px; }
+    .task-card.done { opacity:.75; }
+    .task-card.done .task-check { border-color:#67dfbb66;color:var(--green); }
+    .task-card.done .task-title { color:#9695a7;text-decoration:line-through;text-decoration-color:#828093; }
+    .empty-state { text-align:center;padding:36px 16px 31px;color:#9291a6; }
+    .empty-icon { width:48px;height:48px;border-radius:16px;display:grid;place-items:center;margin:0 auto 13px;color:#b59cff;background:linear-gradient(145deg,#a78bfa20,#6d8fff12); }
+    .empty-icon svg { width:22px;height:22px; }
+    .empty-state strong { display:block;color:#dbd9e7;font-size:12px;margin-bottom:6px; }
+    .empty-state p { margin:0;font-size:11px;line-height:1.55; }
+    .section-divider { border:0;border-top:1px solid var(--line);margin:21px 0 18px; }
+    .completed-heading { display:flex;justify-content:space-between;align-items:center;margin-bottom:12px; }
+    .completed-heading h3 { margin:0;color:#a6a4b5;font-size:11px;font-weight:650; }
+    .text-button { color:#9283d9;border:0;background:none;font-size:10px;cursor:pointer;padding:5px 0; }
+    .text-button:hover { color:#c5b7ff; }
+    .completed-list { display:grid;gap:8px; }
+
+    .right-column { display:grid;gap:15px; }
+    .settings-panel { padding:19px; }
+    .settings-title { display:flex;align-items:center;gap:9px;margin-bottom:8px; }
+    .settings-title .setting-icon { width:29px;height:29px;border-radius:10px;display:grid;place-items:center;color:#ad96ff;background:#a78bfa16; }
+    .setting-icon svg { width:15px;height:15px; }
+    .settings-title h2 { margin:0;font-size:13px;font-weight:650; }
+    .settings-description { color:#9291a6;font-size:10px;line-height:1.6;margin:0 0 15px; }
+    .permission-note { color:#aaa8b8;font-size:10px;line-height:1.6;padding:10px 11px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#ffffff03;margin-bottom:12px; }
+    .permission-note.warning { color:#f1c784;border-color:#efbf5e26;background:#efbf5e08; }
+    .permission-note.success { color:#76dcbc;border-color:#67dfbb20;background:#67dfbb07; }
+    .enable-button { width:100%;height:38px;border:1px solid #a78bfa3d;border-radius:11px;color:#d9ceff;background:linear-gradient(100deg,#a78bfa19,#718eff12);font-size:11px;font-weight:650;cursor:pointer;transition:.2s; }
+    .enable-button:hover { background:#a78bfa25;border-color:#a78bfa77; }
+    .enable-button:disabled { opacity:.65;cursor:default; }
+    .toggle-row { display:flex;justify-content:space-between;align-items:center;padding:12px 0 10px;border-bottom:1px solid var(--line); }
+    .toggle-label strong { display:block;font-size:11px;font-weight:600; }
+    .toggle-label span { display:block;color:#89889a;font-size:9px;margin-top:4px; }
+    .switch { position:relative;width:35px;height:20px; }
+    .switch input { opacity:0;width:0;height:0; }
+    .switch-track { position:absolute;inset:0;border-radius:20px;background:#393847;cursor:pointer;transition:.2s; }
+    .switch-track:before { content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;border-radius:50%;background:#c9c7d7;transition:.2s; }
+    .switch input:checked + .switch-track { background:#8872dd; }
+    .switch input:checked + .switch-track:before { transform:translateX(15px);background:white; }
+    .time-settings { display:flex;align-items:center;gap:8px;padding-top:13px; }
+    .time-settings label { flex:1;color:#9291a6;font-size:9px; }
+    .time-settings input { display:block;width:100%;margin-top:5px;height:30px;padding:0 7px;border:1px solid var(--line);border-radius:8px;background:#11111c;color:#e1dfed;font-size:10px; }
+    .schedule-caption { color:#77768a;font-size:9px;line-height:1.6;margin:10px 0 0; }
+    .insight-card { min-height:145px;padding:18px 19px;position:relative;overflow:hidden;background:linear-gradient(140deg,rgba(46,102,151,.2),rgba(108,85,179,.16)); }
+    .insight-card:after { content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-45px;top:-48px;background:radial-gradient(circle,#7792ff2b,transparent 68%); }
+    .insight-label { color:#9cb6ed;text-transform:uppercase;letter-spacing:1px;font-size:9px;font-weight:700; }
+    .insight-card blockquote { margin:13px 0 10px;font-size:13px;line-height:1.55;font-weight:530;letter-spacing:-.15px;position:relative;z-index:1; }
+    .insight-card cite { color:#9695aa;font-size:9px;font-style:normal; }
+    .footer-note { text-align:center;color:#5f5e70;font-size:9px;margin-top:22px;line-height:1.7; }
+    .toast-region { position:fixed;right:22px;bottom:22px;z-index:9;display:grid;gap:8px; }
+    .toast { max-width:min(360px,calc(100vw - 32px));padding:12px 15px;border:1px solid #a78bfa36;border-radius:12px;background:#242333;color:#eeecf5;font-size:12px;box-shadow:0 10px 30px #0006;animation:arrive .22s ease; }
+    dialog { width:min(440px,calc(100% - 32px));padding:0;border:1px solid #ffffff18;border-radius:20px;background:#1a1a28;color:var(--text);box-shadow:0 25px 100px #000a; }
+    dialog::backdrop { background:#080811b8;backdrop-filter:blur(5px); }
+    .dialog-content { padding:22px; }
+    .dialog-content h2 { font-size:17px;margin:0 0 6px; }
+    .dialog-content p { color:var(--muted);font-size:11px;margin:0 0 18px; }
+    .dialog-content input { width:100%;height:42px;border:1px solid var(--line);border-radius:11px;background:#10101a;color:var(--text);padding:0 12px;font-size:12px; }
+    .dialog-actions { display:flex;justify-content:flex-end;gap:9px;margin-top:17px; }
+    .secondary-button { height:39px;padding:0 14px;border:1px solid var(--line);border-radius:11px;background:#ffffff06;color:#c6c4d2;font-size:11px;cursor:pointer; }
+    .dialog-stars { display:flex;gap:4px;margin-top:13px; }
+    .dialog-stars button { border:0;background:none;font-size:20px;color:#605e71;cursor:pointer;padding:2px; }
+    .dialog-stars button.selected { color:#f3bd6c; }
+    .celebrate { animation:celebrate .55s ease; }
+    @keyframes celebrate { 0%{box-shadow:0 0 0 0 #67dfbb00} 35%{box-shadow:0 0 0 5px #67dfbb24;transform:scale(1.012)} 100%{box-shadow:0 0 0 0 #67dfbb00;transform:scale(1)} }
+
+    @media (max-width: 1000px) {
+      .app-shell { grid-template-columns:205px minmax(0,1fr); }
+      main { padding:30px 28px 55px; }
+      .overview { grid-template-columns:repeat(2,1fr); }
+      .workspace { grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr); }
+    }
+    @media (max-width: 760px) {
+      .app-shell { display:block; }
+      .sidebar { position:fixed;top:auto;bottom:0;left:0;right:0;width:auto;height:64px;padding:7px 12px;background:rgba(19,19,29,.94);border-right:0;border-top:1px solid var(--line);backdrop-filter:blur(20px); }
+      .brand,.side-label,.side-bottom { display:none; }
+      .sidebar nav { display:flex;justify-content:space-around;align-items:center;height:100%; }
+      .nav-item { width:48px;height:46px;justify-content:center;padding:0; }
+      .nav-item span { display:none; }
+      main { padding:24px 20px 96px; }
+      .topbar { margin-bottom:27px; }
+      .welcome { align-items:flex-start;flex-direction:column;gap:11px; }
+      .workspace { grid-template-columns:1fr; }
+      .right-column { grid-template-columns:1fr 1fr;align-items:start; }
+    }
+    @media (max-width: 500px) {
+      main { padding:20px 14px 90px; }
+      .topbar { margin-bottom:24px; }
+      .clock-pill { padding:8px 10px;font-size:10px; }
+      .account-button { padding:5px; }
+      .account-button #account-label { display:none; }
+      .overview { gap:9px; }
+      .stat-card { min-height:112px;padding:14px; }
+      .stat-number { font-size:24px; }
+      .task-panel { padding:15px; }
+      .add-form { flex-wrap:wrap; }
+      .task-input-wrap { flex:1 1 calc(100% - 112px); }
+      .add-form .primary-button { flex:1; }
+      .priority-picker { order:3;height:38px;margin-left:auto;padding:0 9px; }
+      .right-column { grid-template-columns:1fr; }
+      .date-label { font-size:11px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after { scroll-behavior:auto !important;animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5v3M12 17.5v3M3.5 12h3m11 0h3m-15-6.5 2.1 2.1m8.8 8.8 2.1 2.1m0-13-2.1 2.1m-8.8 8.8-2.1 2.1" stroke="white" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="white" stroke-width="1.7"/></svg>
+        </div>
+        daylight
+      </div>
+      <div class="side-label">Workspace</div>
+      <nav>
+        <a class="nav-item active" href="#overview" aria-current="page"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6"/></svg><span>My day</span></a>
+        <a class="nav-item" href="#active-tasks"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5h12M8 12h12M8 19h12M3.5 5h.01M3.5 12h.01M3.5 19h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>My tasks</span></a>
+        <a class="nav-item" href="#completed-tasks"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m8.5 12 2.3 2.3 4.8-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Completed</span></a>
+      </nav>
+      <div class="side-bottom">
+        <div class="focus-card">
+          <div class="focus-orb"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3.5v3M12 17.5v3M3.5 12h3m11 0h3m-15-6.5 2.1 2.1m8.8 8.8 2.1 2.1m0-13-2.1 2.1m-8.8 8.8-2.1 2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/></svg></div>
+          <strong>A little progress adds up.</strong>
+          <p>Focus on what matters most today. You’ve got this.</p>
+        </div>
+        <div class="profile"><div class="avatar" id="sidebar-avatar">Y</div><div><strong id="sidebar-nickname">Your workspace</strong><small id="sidebar-email">Personal space</small></div></div>
+      </div>
+    </aside>
+
+    <main id="overview">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span aria-hidden="true">/</span> <span style="color:#d7d4e4">My day</span></div>
+        <div class="top-actions">
+          <div class="clock-pill" aria-label="Current time"><span id="live-clock">--:--:--</span></div>
+          <button class="account-button" id="account-button" type="button" aria-label="Sign in or manage account"><span class="avatar" id="account-avatar">Y</span><span id="account-label">Sign in</span></button>
+          <button class="icon-button" id="focus-add" aria-label="Focus task input" title="Add a task">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="welcome" aria-label="Welcome">
+        <div><p class="eyebrow">A fresh start, every day</p><h1>Make today count<span style="color:#b49aff">.</span></h1><p class="subline">A little focus goes a long way. Let’s make it a good one.</p></div>
+        <div class="date-label" id="today-date"></div>
+      </section>
+
+      <section class="overview" aria-label="Task overview">
+        <article class="stat-card progress-card">
+          <div class="stat-heading"><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Daily progress</div>
+          <div class="stat-number" id="completion-percent">0%</div>
+          <div class="stat-foot" id="progress-caption">A great day starts with one task</div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        </article>
+        <article class="stat-card"><div class="stat-heading"><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M8 9h8M8 13h8M8 17h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>Total tasks</div><div class="stat-number" id="total-count">0</div><div class="stat-foot">Things on your plate</div></article>
+        <article class="stat-card"><div class="stat-heading"><span class="stat-icon" style="color:#74dfbd"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m8.5 12 2.3 2.3 4.8-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Completed</div><div class="stat-number" id="completed-count">0</div><div class="stat-foot">Wins worth celebrating</div></article>
+        <article class="stat-card"><div class="stat-heading"><span class="stat-icon" style="color:#78a9ff"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>In progress</div><div class="stat-number" id="pending-count">0</div><div class="stat-foot">One step at a time</div></article>
+      </section>
+
+      <div class="workspace">
+        <section class="panel task-panel" id="active-tasks">
+          <div class="panel-heading"><h2>Your tasks</h2><span class="count-badge" id="active-badge">0 active</span></div>
+          <form class="add-form" id="add-form">
+            <div class="task-input-wrap">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <input class="task-input" id="task-input" type="text" maxlength="120" placeholder="What would you like to get done?" autocomplete="off" aria-label="Task name">
+            </div>
+            <div class="priority-picker" role="group" aria-label="Task importance, 1 to 5 stars">
+              <button type="button" class="star-choice" data-star="1" aria-label="1 star" aria-pressed="false">★</button>
+              <button type="button" class="star-choice" data-star="2" aria-label="2 stars" aria-pressed="false">★</button>
+              <button type="button" class="star-choice" data-star="3" aria-label="3 stars" aria-pressed="false">★</button>
+              <button type="button" class="star-choice" data-star="4" aria-label="4 stars" aria-pressed="false">★</button>
+              <button type="button" class="star-choice selected" data-star="5" aria-label="5 stars" aria-pressed="true">★</button>
+            </div>
+            <button type="submit" class="primary-button">Add task</button>
+          </form>
+          <div class="task-list" id="active-list"></div>
+          <hr class="section-divider">
+          <div class="completed-heading" id="completed-tasks"><h3>Completed today <span id="completed-section-count">(0)</span></h3><button class="text-button" id="clear-completed" type="button">Clear all</button></div>
+          <div class="completed-list" id="completed-list"></div>
+        </section>
+
+        <aside class="right-column">
+          <section class="panel settings-panel" aria-labelledby="notification-heading">
+            <div class="settings-title"><span class="setting-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h2 id="notification-heading">Smart reminders</h2></div>
+            <p class="settings-description">Gentle nudges for unfinished tasks, spaced across your day according to importance.</p>
+            <div class="permission-note" id="permission-note" role="status">Reminders are off. Enable browser notifications when you're ready.</div>
+            <button class="enable-button" id="enable-notifications" type="button">Enable Notifications</button>
+            <div class="toggle-row">
+              <div class="toggle-label"><strong>Pause reminders</strong><span>Temporarily stop all task nudges</span></div>
+              <label class="switch"><input id="pause-reminders" type="checkbox" aria-label="Pause reminders"><span class="switch-track"></span></label>
+            </div>
+            <div class="time-settings">
+              <label>Start of day<input id="wake-start" type="time" value="08:00" aria-label="Reminder day start"></label>
+              <label>End of day<input id="wake-end" type="time" value="22:00" aria-label="Reminder day end"></label>
+            </div>
+            <p class="schedule-caption">Notifications are spaced during your day. Works only in supported browsers with permission; reminders may not run when this page is closed.</p>
+          </section>
+          <section class="panel insight-card">
+            <div class="insight-label">A thought for today</div>
+            <blockquote>“You don’t have to see the whole staircase, just take the first step.”</blockquote>
+            <cite>— Martin Luther King Jr.</cite>
+          </section>
+        </aside>
+      </div>
+      <p class="footer-note">Tasks save on this device. Sign in to sync them across devices. Browser reminders require permission and an open page.<br>Take a breath. You’re right where you need to be.</p>
+    </main>
+  </div>
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <dialog id="edit-dialog">
+    <form class="dialog-content" id="edit-form">
+      <h2>Edit task</h2>
+      <p>Make a quick change to your task and its importance.</p>
+      <input id="edit-title" type="text" maxlength="120" aria-label="Edit task name" required>
+      <div class="dialog-stars" role="group" aria-label="Edit task importance">
+        <button type="button" data-edit-star="1" aria-label="1 star">★</button><button type="button" data-edit-star="2" aria-label="2 stars">★</button><button type="button" data-edit-star="3" aria-label="3 stars">★</button><button type="button" data-edit-star="4" aria-label="4 stars">★</button><button type="button" data-edit-star="5" aria-label="5 stars">★</button>
+      </div>
+      <div class="dialog-actions"><button class="secondary-button" id="cancel-edit" type="button">Cancel</button><button class="primary-button" type="submit">Save changes</button></div>
+    </form>
+  </dialog>
+  <dialog id="auth-dialog" class="account-dialog">
+    <div class="dialog-content" id="auth-form">
+      <h2 id="auth-heading">Sign in to Daylight</h2>
+      <p>Save your tasks and profile to your account so they’re ready on your other devices.</p>
+      <div class="account-status" id="auth-status" role="status" aria-live="polite"></div>
+      <div class="clerk-auth-mount" id="clerk-auth-mount"></div>
+      <button class="secondary-button" id="auth-mode-toggle" type="button">Create an account</button>
+      <button class="secondary-button" id="auth-cancel" type="button">Not now</button>
+    </div>
+  </dialog>
+  <dialog id="profile-dialog" class="account-dialog">
+    <form class="dialog-content" id="profile-form">
+      <h2>Your account</h2>
+      <p>Choose how you appear to yourself in Daylight.</p>
+      <div class="account-identity"><img id="clerk-profile-photo" alt=""><div><strong id="clerk-profile-name"></strong><small id="clerk-profile-email"></small></div></div>
+      <div class="avatar-preview" id="profile-avatar-preview">Y</div>
+      <label>Profile picture<input id="profile-photo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+      <label>Username<input id="profile-username" type="text" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" autocomplete="username" required></label>
+      <label>Nickname<input id="profile-nickname" type="text" maxlength="40" autocomplete="nickname" required></label>
+      <div class="account-status" id="profile-status" role="status" aria-live="polite"></div>
+      <button class="secondary-button" id="manage-clerk-profile" type="button">Manage sign-in profile</button>
+      <div class="dialog-actions">
+        <button class="secondary-button" id="sign-out" type="button">Sign out</button>
+        <button class="primary-button" type="submit">Save profile</button>
+      </div>
+      <button class="secondary-button" id="profile-cancel" type="button">Close</button>
+    </form>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
